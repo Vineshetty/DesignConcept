@@ -1,0 +1,91 @@
+The **Singleton Pattern** is a creational design pattern that ensures a class has only one instance and provides a global point of access to that instance. It’s commonly used for cases where you need exactly one instance of a class to control resources, such as database connections, configuration settings, or logging.
+
+Here’s a straightforward example of the Singleton Pattern in C#:
+
+### Example Scenario: Logger Class
+
+Suppose we want a `Logger` class that writes logs to a file. We only need one `Logger` instance in our application to avoid issues like duplicate logs or conflicts when accessing the same log file.
+
+### Code Example
+
+```csharp
+using System;
+
+public class Logger
+{
+    // Private static instance of the same class to ensure only one instance is created.
+    private static Logger _instance;
+
+    // Lock synchronization object for thread safety.
+    private static readonly object _lock = new object();
+
+    // Private constructor to prevent instantiation from outside.
+    private Logger() { }
+
+    // Public static method to provide a single access point.
+    public static Logger GetInstance()
+    {
+        // Check if the instance is null.
+        if (_instance == null)
+        {
+            // Lock to ensure thread safety.
+            lock (_lock)
+            {
+                if (_instance == null)
+                {
+                    _instance = new Logger();
+                }
+            }
+        }
+        return _instance;
+    }
+
+    // Method to simulate logging.
+    public void Log(string message)
+    {
+        Console.WriteLine($"Log entry: {message}");
+    }
+}
+```
+
+### Explanation
+
+1. **Private Constructor**: The constructor is private, preventing external code from creating new instances of the `Logger` class.
+2. **Static Instance Variable**: `_instance` is a private static variable that holds the only instance of `Logger`.
+3. **Thread-Safe Access**: The `lock` ensures that only one thread can enter the critical section at a time, preventing multiple instances from being created in multi-threaded environments.
+4. **Global Access Point**: The `GetInstance()` method returns the single instance of `Logger`. The first time `GetInstance()` is called, it creates the instance; after that, it simply returns the existing instance.
+
+### Usage
+
+```csharp
+class Program
+{
+    static void Main()
+    {
+        // Retrieve the singleton instance and log messages.
+        Logger logger = Logger.GetInstance();
+        logger.Log("This is a log message.");
+
+        // Further calls will use the same instance.
+        Logger anotherLogger = Logger.GetInstance();
+        anotherLogger.Log("This is another log message.");
+
+        // Both loggers are the same instance.
+        Console.WriteLine(object.ReferenceEquals(logger, anotherLogger)); // Output: True
+    }
+}
+```
+
+### Explanation of the Output
+
+- `Logger.GetInstance()` returns the same `Logger` instance each time, even if called multiple times.
+- This is confirmed by checking `object.ReferenceEquals(logger, anotherLogger)`, which returns `True`, indicating they are indeed the same instance.
+
+### Advantages of the Singleton Pattern
+- **Controlled access to a single instance**: This is useful for classes that represent resources.
+- **Lazy Initialization**: The instance is created only when it’s needed, which can save resources.
+- **Thread Safety**: Properly implemented singletons prevent issues in multi-threaded applications.
+
+### Drawbacks
+- **Global State**: Singletons introduce global state into an application, which can make unit testing more difficult.
+- **Hidden Dependencies**: It can become challenging to track where and how the singleton is used, especially in larger applications.
